@@ -1,0 +1,39 @@
+version: '3.5'
+
+services:
+  quiz_db:
+    container_name: quiz_db
+    image: postgres:14.7-alpine
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      - "./data:/data/db"
+
+  pgadmin:
+    container_name: pgadmin
+    image: dpage/pgadmin4
+    restart: always
+    depends_on:
+      - quiz_db
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=admin@admin.net
+      - PGADMIN_DEFAULT_PASSWORD=54321!
+    ports:
+      - "5400:80"
+
+  app:
+    build: .
+    env_file:
+      - .env
+    container_name: quiz_app
+    ports:
+      - 8000:8000
+    command: ['sh', '/quiz_app/docker/init.sh']
+    depends_on:
+      - quiz_db
+
+volumes:
+  quiz_db:
